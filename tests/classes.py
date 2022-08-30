@@ -9,6 +9,7 @@ class ModelInterface(ABC, BaseModel):
 
 
     def b(self):
+        """Some abstract method"""
         ...
 
 
@@ -39,7 +40,9 @@ class A3(A2):
 
 
     def dict(self):
-        ...
+        """This is a dummy method subclassing pydantic's BaseModel dict"""
+        # The super() method is way up in the class hierarchy, inside
+        # a library
 
 
 A3.dict()

@@ -10,7 +10,17 @@ The specification [3.17.0](https://microsoft.github.io/language-server-protocol/
 
 Those methods being somewhat new, they are not yet supported by either the native neovim LSP client nor any of the language server that I use.
 
-This plugin is a « hack » providing those functionalities by combining existing, well supported LSP methods, `textDocument/references` and `textDocument/definition` with [treesitter](https://github.com/nvim-treesitter/nvim-treesitter). Requests to your LSP server allows discovering symbols in different files, and treesitter allows contextual awareness to manipulate the matched symbols and find related symbols to query for. 
+This plugin is a « hack » providing those functionalities by combining existing, well supported LSP methods, `textDocument/references` and `textDocument/definition` with [treesitter](https://github.com/nvim-treesitter/nvim-treesitter). Requests to your LSP server allows discovering symbols in different files, and treesitter allows contextual awareness to manipulate the matched symbols and find related symbols to query for.
+
+## Preview
+
+**Jump to first parent method**
+
+![](https://github.com/Slyces/hierarchy.nvim/blob/master/videos/supertype_jump.mov)
+
+**Quickfix all child implementations**
+
+![](https://github.com/Slyces/hierarchy.nvim/blob/master/videos/subtype_quickfix.mov)
 
 ## Languages
 
