@@ -68,23 +68,4 @@ function M.quickfix(err, result, ctx, config)
 end
 
 
----Loads all matches to the quickfix list then opens a telescope picker
----
----@param err any
----@param result lsp_hierarchy_item[]|nil
----@param ctx {params: {item: lsp_hierarchy_item}}
----@param config any
-function M.telescope_quickfix(err, result, ctx, config)
-  M.load_quickfix(err, result, ctx, config)
-  local theme = require('telescope.themes').get_cursor({
-    layout_config = {
-      width = function(_, max_columns, _)
-        return math.floor(0.7 * max_columns)
-      end
-    }
-  })
-  require('telescope.builtin').quickfix(theme)
-end
-
-
 return M

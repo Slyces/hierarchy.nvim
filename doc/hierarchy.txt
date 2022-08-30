@@ -1,0 +1,233 @@
+==============================================================================
+*hiearchy.nvim*  Client side LSP Type Hierarchy Protocol
+
+                                       Type |gO| to see the table of contents.
+
+==============================================================================
+INTRODUCTION                                                 *hierarchy-intro*
+
+The specification 3.17.0 of the Language Server Protocol |lsp| introduced
+a new set of methods, the type hierarchy protocol. Those methods introduce the
+ability to navigate the type hierarchy of your program, through 3 new methods:
+- `textDocument/prepareTypeHierarchy` identify the type symbol at location
+- `typeHierarchy/supertypes` find supertypes of a prepared symbol
+- `typeHierarchy/subtypes` find subtypes of a prepared symbol
+
+
+Those methods being somewhat new, they are not yet supported by either the
+native neovim LSP client |lsp-method| nor any of the language server that I use.
+
+
+This plugin is a « hack » providing those functionalities by combining lsp
+`textDocument/references` and `textDocument/definition` with
+|treesitter|. Requests to your LSP server allows discovering symbols in
+different files, and |treesitter| allows contextual awareness to manipulate
+the matched symbols and find related symbols to query for.
+
+
+==============================================================================
+HIGH LEVEL METHODS                                       *hierarchy-interface*
+
+The main interface of this plugin is provided through 2 functions. Those
+function take in a regular |lsp-handler| and will find:
+- implementations of the current method in all (super/sub)classes
+- definition of all (super/sub)classes for the current
+
+You can import those functions directly in the top level of the plugin
+>
+    local hierarchy = require('hierarchy')
+    hierarchy.supertypes(handler)
+    hierarchy.subtypes(handler)
+<
+
+`supertypes`({handler})                               *hierarchy.supertypes()*
+
+High level interface for 'hierarchy.nvim'. Sends an LSP request for
+`textDocument/prepareTypeHierarchy` for the symbol under cursor, then
+a request for `typeHierarchy/supertypes`, handled by the client-side
+implementation if no server supports the method.
+
+Provides all results 
+
+Parameters~
+{handler} |hierarchy-lsp-handler| With specific results and params
+    {}
+
+==============================================================================
+REQUESTS                                                  *hierarchy-requests*
+
+
+`hierarchy-position-params`(table)                 *hierarchy-position-params*
+
+LSP specification name: `TextDocumentPositionParams`.
+
+Table containing the following key-values pairs:
+
+{textDocument}  (table)
+
+	The text Document
+
+	{uri}  (string)
+		The text document's URI, e.g. 'file://{path}'
+
+{position} (|hierarchy-position|)
+	The position inside the document
+
+See |vim.lsp.util.make_position_params()| to get this table for the current
+cursor position.
+
+
+------------------------------------------------------------------------------
+PREPARE REQUEST                                    *hierarchy-prepare-request*
+
+`hierarchy-prepare-params`(table)                   *hierarchy-prepare-params*
+
+LSP specification name: `TypeHierarchyPrepareParams`.
+
+Parameters send to the server for a `textDocument/prepareTypeHierarchy`
+method request.
+
+Same as `TextDocumentPositionParams`, see |hierarchy-position-params|.
+
+
+`hierarchy-prepare-handler`(function)              *hierarchy-prepare-handler*
+
+Specification of the generic |lsp-handler| for the `typeHierarchy/*` protocol.
+
+For a |hierarchy-prepare-request|, each |hierarchy-prepare-handler| should 
+have this signature (extending |lsp-handler|): >
+
+  function(err, result, ctx, config)
+<
+    Parameters: ~
+	{err}       (table|nil)  see |lsp-handler|
+
+	{result}    (|hierarchy-item| | nil)
+		The |hierarchy-item| resolved from the text position
+		given in params, if any is valid.
+
+	{ctx}       (table)
+
+		Context describes additional calling state
+		associated with the handler. It consists of the
+		following key, value pairs:
+
+		{method}    (string)  'textDocument/prepareHierarchy'
+			The |lsp-method| name.
+
+		{client_id} (number)
+			The ID of the |vim.lsp.client|. -1 if the hierarchy
+			plugin handled the request
+
+		{bufnr}     (Buffer)  see |lsp-handler|
+
+		{params}    (|hierarchy-prepare-params| | nil)
+			Text position of a symbol.
+
+	{config}    (table)  see |lsp-handler|
+
+
+    Returns: ~
+	see |lsp-handler|
+
+
+------------------------------------------------------------------------------
+SUPERTYPES REQUEST                              *hierarchy-supertypes-request*
+SUBTYPES REQUEST                                  *hierarchy-subtypes-request*
+
+`hierarchy-types-params`(table)                       *hierarchy-types-params*
+
+Lsp specification name:
+- `TypeHierarchySupertypesParams`
+- `TypeHierarchySubtypesParams`
+
+Parameters send to the server for a `typeHierarchy/supertypes` or
+`typeHierarchy/subtypes` method request.
+
+Table containing the following key-values pairs:
+
+{item}  (|hierarchy-item|)
+	Item to retrieve the (super/sub)types of
+
+
+`hierarchy-types-handler`(function)                  *hierarchy-types-handler*
+
+Specification of the generic |lsp-handler| for the `typeHierarchy/*` protocol.
+
+For a |hierarchy-prepare-request|, each |hierarchy-prepare-handler| should 
+have this signature (extending |lsp-handler|): >
+
+  function(err, result, ctx, config)
+<
+    Parameters: ~
+	{err}       (table|nil)  see |lsp-handler|
+
+	{result}    (|hierarchy-item|[] | nil)
+		A table of all |hierarchy-item| resolved for the requested
+		|hierarchy-item|.
+
+	{ctx}       (table)
+
+		Context describes additional calling state
+		associated with the handler. It consists of the
+		following key, value pairs:
+
+		{method}    (string)
+			'typeHierarchy/subtypes' or 'typeHierarchy/supertypes'
+			The |lsp-method| name.
+
+		{client_id} (number)
+			The ID of the |vim.lsp.client|. -1 if the hierarchy
+			plugin handled the request
+
+		{bufnr}     (Buffer)  see |lsp-handler|
+
+		{params}    (table)
+			The params provided to the server.
+
+			Table containing the following key-values pairs:
+
+			{item}  (|hierarchy-item|)
+				Initial item of the type hierarchy. It's
+				either the child/parent of the results.
+
+	{config}    (table)  see |lsp-handler|
+
+
+    Returns: ~
+	see |lsp-handler|
+
+
+==============================================================================
+HANDLERS                                           *hierarchy-custom-handlers*
+
+This plugin provides some handlers out of the box.
+
+
+------------------------------------------------------------------------------
+                                             *hierarchy.handlers.jump_first()*
+`M.jump_first`({err}, {result}, {ctx}, {config})
+
+Jumps to the first hierarchy item match, if any.
+
+For a detailed signature, see |hierarchy-types-handler|
+
+
+------------------------------------------------------------------------------
+                                          *hierarchy.handlers.load_quickfix()*
+`M.load_quickfix`({err}, {result}, {ctx}, {config})
+
+Loads all matches to the quickfix list. Does not open the list.
+
+For a detailed signature, see |hierarchy-types-handler|
+
+------------------------------------------------------------------------------
+                                               *hierarchy.handlers.quickfix()*
+`M.quickfix`({err}, {result}, {ctx}, {config})
+
+Loads all matches to the quickfix list, then opens the quickfix list.
+
+For a detailed signature, see |hierarchy-types-handler|
+
+
+vim:tw=78:ts=8:noet:ft=help:norl:

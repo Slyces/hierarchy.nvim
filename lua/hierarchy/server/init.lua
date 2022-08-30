@@ -53,7 +53,8 @@ function M.request(bufnr, method, params, handler)
 
   if method == 'textDocument/prepareTypeHierarchy' then
     local items = prepare(params)
-    handler(nil, items, {params=params}, nil)
+    local ctx = { bufnr=bufnr, params=params, method=method, client_id=-1 }
+    handler(nil, items, ctx, nil)
   elseif method == 'typeHierarchy/supertypes' then
     Supertypes:new(handler):start(params)
   elseif method == 'typeHierarchy/subtypes' then

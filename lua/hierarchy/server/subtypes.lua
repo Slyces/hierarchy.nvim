@@ -37,4 +37,9 @@ function Subtypes:send_requests(search_id, class)
   )
 end
 
+
+function Subtypes:method()
+  return 'typeHierarchy/subtypes'
+end
+
 return Subtypes

@@ -188,13 +188,15 @@ function Searcher:start(params)
 
   cache[search_id] = {
     requests = {},
-    ctx = {params=params},
+    -- See |lsp-handler|
+    ctx = { bufnr=bufnr, params=params, method=self:method(), client_id=-1 },
     nodes = {},
     searcher = self,
   }
 
   local params = build_params(search_id, class.node, class.bufnr)
-  local ctx = {params=params, search={id=search_id, request_id=1}}
+  local ctx = cache[search_id].ctx
+  ctx.params.search = {id=search_id, request_id=1}
 
   ---@type lsp_location
   local e_row, e_col, _ = class.node:end_()
@@ -233,6 +235,14 @@ end
 ---@param search_id string
 ---@param class classnode
 function Searcher:send_requests(search_id, class)
+  error("You should implement this method in a subclass")
+end
+
+
+---LSP method supported by this search class.
+---
+---@return string
+function Searcher:method()
   error("You should implement this method in a subclass")
 end
 

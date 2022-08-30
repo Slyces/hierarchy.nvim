@@ -163,6 +163,8 @@ function M.telescope_quickfix(err, result, ctx, config)
 end
 ```
 
+For more information about the signature of those handlers, see `:h hierarchy` or `:h hierarchy-types-handler`. The documentation provides lua docs entries for all elements of the LSP protocol (relevant to the plugin).
+
 # Possible Features
 
 - [ ] Create proper tests

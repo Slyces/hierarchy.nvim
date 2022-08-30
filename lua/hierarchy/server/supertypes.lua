@@ -32,5 +32,9 @@ function Supertypes:send_requests(search_id, class)
   end
 end
 
+function Supertypes:method()
+  return 'typeHierarchy/supertypes'
+end
+
 
 return Supertypes

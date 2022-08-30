@@ -1,0 +1,39 @@
+*hiearchy.nvim*  Client side LSP Type Hierarchy Protocol
+
+                                       Type |gO| to see the table of contents.
+
+==============================================================================
+INTRODUCTION                                                 *hierarchy-intro*
+
+The specification 3.17.0 of the Language Server Protocol |lsp| introduced
+a new set of methods, the type hierarchy protocol. Those methods introduce the
+ability to navigate the type hierarchy of your program, through 3 new methods:
+- `textDocument/prepareTypeHierarchy` identify the type symbol at location
+- `typeHierarchy/supertypes` find supertypes of a prepared symbol
+- `typeHierarchy/subtypes` find subtypes of a prepared symbol
+
+Those methods being somewhat new, they are not yet supported by either the
+native neovim LSP client |lsp-method| nor any of the language server that I use.
+
+This plugin is a « hack » providing those functionalities by combining lsp
+`textDocument/references` and `textDocument/definition` with
+|treesitter|. Requests to your LSP server allows discovering symbols in
+different files, and |treesitter| allows contextual awareness to manipulate
+the matched symbols and find related symbols to query for.
+
+==============================================================================
+HIGH LEVEL METHODS                                       *hierarchy-interface*
+
+The main interface of this plugin is provided through 2 functions. Those
+function take in a regular |lsp-handler| and will find:
+- implementations of the current method in all (super/sub)classes
+- definition of all (super/sub)classes for the current
+
+You can import those functions directly in the top level of the plugin
+>
+    local hierarchy = require('hierarchy')
+    hierarchy.supertypes(handler)
+    hierarchy.subtypes(handler)
+<
+
+supertypes(handler)                                     *hierarchy.supertypes*
