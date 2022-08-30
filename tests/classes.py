@@ -36,3 +36,10 @@ class A3(A2):
 
     def b(self):
         ...
+
+
+    def dict(self):
+        ...
+
+
+A3.dict()

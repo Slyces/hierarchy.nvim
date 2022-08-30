@@ -1,16 +1,5 @@
 --[[ ───────────────────────── imports / aliases ────────────────────────── ]]--
-local ts_utils = require('nvim-treesitter.ts_utils')
-
----@param node tsnode
----@param bufnr integer
----@return string
-local function get_node_text(node, bufnr)
-  return vim.treesitter.query.get_node_text(node, bufnr)
-end
-
-local lang = function()
-  return vim.bo.filetype
-end
+local utils = RELOAD('hierarchy.server.utils')
 
 
 --[[ ───────────────────────────── Class Node ───────────────────────────── ]]--
@@ -53,14 +42,10 @@ end
 function ClassNode:from_children(children, bufnr)
   bufnr = bufnr or 0
 
-  local node = children
-  while node do
-    if node:type() == "class_definition" then
-      return ClassNode:new(node, bufnr)
-    end
-    node = node:parent()
+  local parent_class = utils.first_parent_of_type(children, 'class_definition')
+  if parent_class then
+    return ClassNode:new(parent_class, bufnr)
   end
-  return
 end
 
 
@@ -69,7 +54,7 @@ end
 ---@return string name: the text of the current class name
 function ClassNode:name()
   local name_node = self.node:field("name")[1]
-  return get_node_text(name_node, self.bufnr)
+  return utils.get_node_text(name_node, self.bufnr)
 end
 
 
@@ -89,7 +74,7 @@ function ClassNode:find_method(name)
       identifier = children:field("name")[1]
     end
 
-    if identifier and get_node_text(identifier, self.bufnr) == name then
+    if identifier and utils.get_node_text(identifier, self.bufnr) == name then
       return identifier
     end
   end
