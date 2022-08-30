@@ -1,13 +1,5 @@
 local M = {}
 
----@private
----Debug printer showing the list of items
-local function printer(err, result, ctx, config)
-  for i, item in ipairs(result) do
-    P({i, item})
-  end
-end
-
 
 ---Jumps to the first hierarchy item match, if any
 ---
@@ -26,7 +18,13 @@ function M.jump_first(err, result, ctx, config)
 end
 
 
-local function load_quickfix(err, result, ctx, config)
+---Loads all matches to the quickfix list. Does not open the list.
+---
+---@param err any
+---@param result lsp_hierarchy_item[]|nil
+---@param ctx {params: {item: lsp_hierarchy_item}}
+---@param config any
+function M.load_quickfix(err, result, ctx, config)
   if not result then
     return
   end
@@ -39,16 +37,18 @@ local function load_quickfix(err, result, ctx, config)
 
   local qf_items = {}
   for _, item in ipairs(items) do
-    -- Find the class name for this item
-    local bufnr = vim.fn.bufadd(vim.uri_to_fname(item.uri))
-    local tree = utils.get_tree(bufnr)
-
-    local node = utils.node_from_match(item, tree)
-    local class_name = utils.get_node_text(node:field("name")[1], bufnr)
-
     -- Create a quickfix list item
     qf_item = vim.lsp.util.symbols_to_items({item}, bufnr)[1]
-    qf_item.text = qf_item.text:gsub(' ', ' ' .. class_name .. '.')
+
+    -- Prefix the class name for methods
+    if ctx.params.item.kind == 12 then  -- Function
+      local bufnr = vim.fn.bufadd(vim.uri_to_fname(item.uri))
+      local tree = utils.get_tree(bufnr)
+
+      local node = utils.node_from_match(item, tree)
+      local class_name = utils.get_node_text(node:field("name")[1], bufnr)
+      qf_item.text = qf_item.text:gsub(' ', ' ' .. class_name .. '.')
+    end
 
     table.insert(qf_items, qf_item)
   end
@@ -56,26 +56,26 @@ local function load_quickfix(err, result, ctx, config)
 end
 
 
----Loads all matches to the quickfix list
+---Loads all matches to the quickfix list, then opens the quickfix list.
 ---
 ---@param err any
 ---@param result lsp_hierarchy_item[]|nil
 ---@param ctx {params: {item: lsp_hierarchy_item}}
 ---@param config any
 function M.quickfix(err, result, ctx, config)
-  load_quickfix(err, result, ctx, config)
+  M.load_quickfix(err, result, ctx, config)
   vim.api.nvim_command('botright copen')
 end
 
 
----Loads all matches to the quickfix list then opens a 
+---Loads all matches to the quickfix list then opens a telescope picker
 ---
 ---@param err any
 ---@param result lsp_hierarchy_item[]|nil
 ---@param ctx {params: {item: lsp_hierarchy_item}}
 ---@param config any
-function M.quickfix(err, result, ctx, config)
-  load_quickfix(err, result, ctx, config)
+function M.telescope_quickfix(err, result, ctx, config)
+  M.load_quickfix(err, result, ctx, config)
   local theme = require('telescope.themes').get_cursor({
     layout_config = {
       width = function(_, max_columns, _)
@@ -83,8 +83,6 @@ function M.quickfix(err, result, ctx, config)
       end
     }
   })
-  P(cursor_theme())
-  P(theme)
   require('telescope.builtin').quickfix(theme)
 end
 

@@ -1,5 +1,5 @@
-Searcher = RELOAD('hierarchy.server.search')
-ClassNode = RELOAD('hierarchy.server.class_node')
+Searcher = require('hierarchy.server.search')
+ClassNode = require('hierarchy.server.class_node')
 
 Supertypes = Searcher:new()
 

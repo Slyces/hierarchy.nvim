@@ -2,9 +2,9 @@ local M = {}
 
 ---@module 'hierarchy.server.annotation'
 
-prepare = RELOAD('hierarchy.server.prepare')
-Supertypes = RELOAD('hierarchy.server.supertypes')
-Subtypes = RELOAD('hierarchy.server.subtypes')
+prepare = require('hierarchy.server.prepare')
+Supertypes = require('hierarchy.server.supertypes')
+Subtypes = require('hierarchy.server.subtypes')
 
 ---Low level interface of `hierarchy.nvim`. Sends an LSP request with the same
 ---interface as `vim.lsp.buf_request`.
@@ -25,13 +25,13 @@ Subtypes = RELOAD('hierarchy.server.subtypes')
 ---@param method string LSP method name
 ---@param params table|nil Parameters to send to the server
 ---@param handler lsp_handler|nil See |lsp-handler|
----       If nil, follows resolution strategy defined in |lsp-handler-configuration|
----
----@returns 2-tuple:
----  - Map of client-id:request-id pairs for all successful requests.
----  - Function which can be used to cancel all the requests. You could instead
----    iterate all clients and call their `cancel_request()` methods.
 function M.request(bufnr, method, params, handler)
+  vim.validate({
+    bufnr={bufnr, 'n'},
+    method={method, 's'},
+    params={params, 't'},
+    handler={handler, 'f'}
+  })
 
   -- Check for support in any existing client.
   -- Note: the current 'lsp.client.supports_method' implementation assumes that
@@ -96,5 +96,7 @@ end
 function M.subtypes(handler)
   type_hierarchy('typeHierarchy/subtypes', handler)
 end
+
+M.prepare = prepare
 
 return M
