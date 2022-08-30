@@ -16,11 +16,7 @@ This plugin is a « hack » providing those functionalities by combining existin
 
 **Jump to first parent method**
 
-![](https://github.com/Slyces/hierarchy.nvim/blob/master/videos/supertype_jump.mov)
-
-**Quickfix all child implementations**
-
-![](https://github.com/Slyces/hierarchy.nvim/blob/master/videos/subtype_quickfix.mov)
+![](https://s6.gifyu.com/images/supertype_jump.gif)
 
 ## Languages
 
