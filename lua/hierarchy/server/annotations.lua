@@ -51,6 +51,16 @@ function tsnode:type() end
 function tsnode:id() end
 
 
+---Get the smallest node within this node that spans the given range of
+---(row, column) positions
+---
+---@param start_row integer
+---@param start_col integer
+---@param end_row integer
+---@param end_col integer
+function tsnode:descendant_for_range(start_row, start_col, end_row, end_col) end
+
+
 --[[ ──────────────────────────────── LSP ───────────────────────────────── ]]--
 
 ---@alias lsp_handler fun(err: any, result: any, ctx: any, config: any): nil

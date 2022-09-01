@@ -37,12 +37,13 @@ function M.load_quickfix(err, result, ctx, config)
 
   local qf_items = {}
   for _, item in ipairs(items) do
+    local bufnr = vim.fn.bufadd(vim.uri_to_fname(item.uri))
+
     -- Create a quickfix list item
     qf_item = vim.lsp.util.symbols_to_items({item}, bufnr)[1]
 
     -- Prefix the class name for methods
     if ctx.params.item.kind == 12 then  -- Function
-      local bufnr = vim.fn.bufadd(vim.uri_to_fname(item.uri))
       local tree = utils.get_tree(bufnr)
 
       local node = utils.node_from_match(item, tree)
